@@ -102,8 +102,7 @@ Name=ScreenDrawing
 GenericName=Screen Drawing Tool
 Comment=Lightweight screen drawing overlay
 StartupNotify=false
-Categories=Utility;Graphics;
-
+Categories=Utility;
 
 Then refresh:
 
