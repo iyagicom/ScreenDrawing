@@ -104,6 +104,7 @@ Comment=Lightweight screen drawing overlay
 StartupNotify=false
 Categories=Utility;
 
+
 Then refresh:
 
 update-desktop-database ~/.local/share/applications
