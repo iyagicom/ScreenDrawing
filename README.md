@@ -84,8 +84,8 @@ Now it appears in application menu.
 | Key      | Function         |
 | -------- | ---------------- |
 | Mouse    | Draw             |
-| Ctrl     | Temporary Eraser |
-| Shift    | Straight Line    |
+| Ctrl+Q   | Quit             |
+| C        | Clear canvas     |
 | Ctrl + Z | Undo             |
 
 ## Notes
