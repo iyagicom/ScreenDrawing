@@ -9,8 +9,6 @@ Designed for simple on-screen annotation with pen, eraser, and undo.
 * Eraser (pen strokes only)
 * Undo (Ctrl + Z)
 * Clear canvas (C key)
-* Temporary eraser (Ctrl key)
-* Straight line (Shift key)
 * Lightweight and fast
 * Wayland compatible (GNOME tested)
 
