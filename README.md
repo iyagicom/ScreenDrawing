@@ -100,9 +100,10 @@ Type=Application
 Terminal=false
 Name=ScreenDrawing
 GenericName=Screen Drawing Tool
-Comment=Lightweight screen drawing overlay (Wayland)
+Comment=Lightweight screen drawing overlay
 StartupNotify=false
 Categories=Utility;Graphics;
+
 
 Then refresh:
 
