@@ -48,16 +48,30 @@ Now you can run it from terminal:
 ```bash
 screendrawing
 ```
+## Wayland (GNOME) Notes
 
-If menu does not appear on GNOME Wayland:
+If the menu does not appear on GNOME Wayland:
+
+```bash
 QT_QPA_PLATFORM=wayland screendrawing
 
-Save:
-Saved image is transparent (drawing only).
-Useful for overlay, editing, and presentations.
+```md
 
-If you want full screen capture with drawings,
-use external screenshot tools (GNOME Screenshot, Spectacle, etc.)
+
+## Save Behavior
+
+Saved images are transparent (drawing only).
+This is intentional and useful for:
+- Overlay editing
+- Presentations
+- Video annotation
+- Image compositing
+
+If you want a full screen capture with drawings,
+please use external screenshot tools such as:
+- GNOME Screenshot
+- Spectacle
+- Flameshot
 
 
 ## Desktop Launcher (GUI 실행)
