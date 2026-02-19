@@ -44,9 +44,11 @@ chmod +x screendrawing.py
 
 ### 3. Install to user PATH (best method)
 
+```ini
 mkdir -p ~/.local/bin
 mv screendrawing.py ~/.local/bin/screendrawing
 chmod +x ~/.local/bin/screendrawing
+```
 
 Now you can run it from anywhere:
 
