@@ -19,8 +19,15 @@ Tested on:
 * Linux (Ubuntu)
 * GNOME Wayland Session
 * Python 3.x
-
+  
 X11 is not officially tested.
+
+Save:
+Saved image is transparent (drawing only).
+Useful for overlay, editing, and presentations.
+
+If you want full screen capture with drawings,
+use external screenshot tools (GNOME Screenshot, Spectacle, etc.)
 
 ## Installation (Easy Method)
 
