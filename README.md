@@ -84,9 +84,10 @@ Now it appears in application menu.
 | Key      | Function         |
 | -------- | ---------------- |
 | Mouse    | Draw             |
-| Ctrl+Q   | Quit             |
+| Ctrl+Q,ESC   | Quit             |
 | C        | Clear canvas     |
 | Ctrl + Z | Undo             |
+| Ctrl + S | Screen Save             |
 
 ## Notes
 
