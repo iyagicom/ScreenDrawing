@@ -49,6 +49,9 @@ Now you can run it from terminal:
 screendrawing
 ```
 
+If menu does not appear on GNOME Wayland:
+QT_QPA_PLATFORM=wayland screendrawing
+
 ## Desktop Launcher (GUI 실행)
 
 Create file:
