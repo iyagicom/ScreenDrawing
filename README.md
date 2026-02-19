@@ -88,21 +88,32 @@ use external screenshot tools such as:
 
 Create this file:
 
-~/.local/share/applications/screendrawing.desktop
+~/Desktop/screendrawing.desktop
 
 Paste:
 
 [Desktop Entry]
+
 Encoding=UTF-8
+
 Exec=screendrawing
+
 Icon=applications-graphics
+
 Type=Application
+
 Terminal=false
+
 Name=ScreenDrawing
+
 GenericName=Screen Drawing Tool
+
 Comment=Lightweight screen drawing overlay
+
 StartupNotify=false
+
 Categories=Utility;
+
 
 Then refresh:
 
