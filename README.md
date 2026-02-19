@@ -93,27 +93,16 @@ Create this file:
 Paste:
 
 [Desktop Entry]
-
 Encoding=UTF-8
-
 Exec=screendrawing
-
 Icon=applications-graphics
-
 Type=Application
-
 Terminal=false
-
 Name=ScreenDrawing
-
 GenericName=Screen Drawing Tool
-
 Comment=Lightweight screen drawing overlay
-
 StartupNotify=false
-
 Categories=Utility;
-
 
 Then refresh:
 
