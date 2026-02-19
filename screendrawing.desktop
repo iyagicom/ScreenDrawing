@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Exec=screendrawing
+Icon=applications-graphics
+Type=Application
+Terminal=false
+Comment=스크린 드로잉 오버레이 도구
+Name=ScreenDrawing
+GenericName=스크린 드로잉
+StartupNotify=false
+Categories=Utility;Graphics;
