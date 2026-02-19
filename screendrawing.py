@@ -5,9 +5,11 @@ ScreenDrawing
 Version: 1.1.0
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
+Homepage: https://github.com/iyagicom/ScreenDrawing
 Description: Lightweight Wayland screen drawing tool
              (pen, shapes, text, highlight, eraser, undo, screenshot)
-License: GPL-2.0 or later
+Environment: GNOME Wayland (Ubuntu tested)
+License: GPL-2.0-or-later
 """
 
 # Copyright (C) 2026 Jeong SeongYong
