@@ -39,9 +39,10 @@ Download the file:
 screendrawing.py
 
 ### 2. Make executable
+```ini
 
 chmod +x screendrawing.py
-
+```
 ### 3. Install to user PATH (best method)
 
 ```ini
@@ -113,9 +114,10 @@ Categories=Utility;
 ```
 
 Then refresh:
+```ini
 
 update-desktop-database ~/.local/share/applications
-
+```
 Now ScreenDrawing will appear in the application menu.
 
 ---
