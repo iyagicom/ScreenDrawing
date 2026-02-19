@@ -22,13 +22,6 @@ Tested on:
   
 X11 is not officially tested.
 
-Save:
-Saved image is transparent (drawing only).
-Useful for overlay, editing, and presentations.
-
-If you want full screen capture with drawings,
-use external screenshot tools (GNOME Screenshot, Spectacle, etc.)
-
 ## Installation (Easy Method)
 
 ### 1. Download the file
@@ -58,6 +51,14 @@ screendrawing
 
 If menu does not appear on GNOME Wayland:
 QT_QPA_PLATFORM=wayland screendrawing
+
+Save:
+Saved image is transparent (drawing only).
+Useful for overlay, editing, and presentations.
+
+If you want full screen capture with drawings,
+use external screenshot tools (GNOME Screenshot, Spectacle, etc.)
+
 
 ## Desktop Launcher (GUI 실행)
 
