@@ -92,6 +92,9 @@ Create this file:
 
 Paste:
 
+## Desktop Entry
+
+```ini
 [Desktop Entry]
 Encoding=UTF-8
 Exec=screendrawing
@@ -103,7 +106,7 @@ GenericName=Screen Drawing Tool
 Comment=Lightweight screen drawing overlay
 StartupNotify=false
 Categories=Utility;
-
+```
 
 Then refresh:
 
