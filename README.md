@@ -59,9 +59,10 @@ screendrawing
 ## ⚠️ Wayland (GNOME) Notes
 
 If the menu does not appear on GNOME Wayland, run:
+```ini
 
 QT_QPA_PLATFORM=wayland screendrawing
-
+```
 ScreenDrawing is primarily developed and tested on GNOME Wayland.
 
 ---
@@ -89,9 +90,10 @@ use external screenshot tools such as:
 ## 🚀 Desktop Launcher (GUI 실행)
 
 Create this file:
+```ini
 
 ~/Desktop/screendrawing.desktop
-
+```
 Paste:
 
 ## Desktop Entry
