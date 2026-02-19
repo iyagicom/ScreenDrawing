@@ -1,90 +1,90 @@
 # ScreenDrawing
 
-Lightweight screen drawing tool for Linux (Wayland compatible).
-Designed for simple on-screen annotation with pen, eraser, and undo.
+Lightweight screen drawing tool for Linux (Wayland optimized).  
+Designed for simple on-screen annotation with pen, eraser, undo, and transparent overlay.
 
-## Features
+---
 
-* Screen overlay drawing (Pen)
-* Eraser (pen strokes only)
-* Undo (Ctrl + Z)
-* Clear canvas (C key)
-* Lightweight and fast
-* Wayland compatible (GNOME tested)
+## ✨ Features
 
-## Environment
+- Screen overlay drawing (Pen)
+- Eraser (pen strokes only)
+- Undo (Ctrl + Z)
+- Clear canvas (C key)
+- Transparent drawing overlay (PNG save)
+- Lightweight & fast
+- Wayland compatible (GNOME tested)
+
+---
+
+## 🖥️ Environment
 
 Tested on:
 
-* Linux (Ubuntu)
-* GNOME Wayland Session
-* Python 3.x
-  
-X11 is not officially tested.
+- Ubuntu 24.04
+- GNOME Wayland Session
+- Python 3.x
+- PyQt5
 
-## Installation (Easy Method)
+> X11 is not officially tested.
 
-### 1. Download the file
+---
 
-Download `screendrawing.py`
+## 📥 Installation (No sudo, Recommended)
 
-### 2. Make it executable
+### 1. Download
+
+Download the file:
+
+screendrawing.py
+
+
+### 2. Make executable
 
 ```bash
 chmod +x screendrawing.py
-```
-
-### 3. Install (No sudo, recommended)
-
-```bash
-chmod +x screendrawing.py
+3. Install to user PATH (best method)
 mkdir -p ~/.local/bin
 mv screendrawing.py ~/.local/bin/screendrawing
+chmod +x ~/.local/bin/screendrawing
+Now you can run it from anywhere:
 
-```
-
-Now you can run it from terminal:
-
-```bash
 screendrawing
-```
-## Wayland (GNOME) Notes
+⚠️ Wayland (GNOME) Notes
+If the menu does not appear on GNOME Wayland, run:
 
-If the menu does not appear on GNOME Wayland:
-
-```bash
 QT_QPA_PLATFORM=wayland screendrawing
+ScreenDrawing is primarily developed and tested on GNOME Wayland.
 
-```md
-
-
-## Save Behavior
-
+💾 Save Behavior (Important)
 Saved images are transparent (drawing only).
 This is intentional and useful for:
-- Overlay editing
-- Presentations
-- Video annotation
-- Image compositing
+
+Overlay editing
+
+Presentations
+
+Video annotation
+
+Tutorials / lectures
+
+Image compositing
 
 If you want a full screen capture with drawings,
-please use external screenshot tools such as:
-- GNOME Screenshot
-- Spectacle
-- Flameshot
+use external screenshot tools such as:
 
+GNOME Screenshot
 
-## Desktop Launcher (GUI 실행)
+Spectacle
 
-Create file:
+Flameshot
 
-```
+🚀 Desktop Launcher (GUI 실행)
+Create this file:
+
 ~/.local/share/applications/screendrawing.desktop
-```
-
 Paste:
 
-```
 [Desktop Entry]
 Encoding=UTF-8
 Exec=screendrawing
@@ -93,37 +93,39 @@ Type=Application
 Terminal=false
 Name=ScreenDrawing
 GenericName=Screen Drawing Tool
-Comment=Lightweight screen drawing overlay
+Comment=Lightweight screen drawing overlay (Wayland)
 StartupNotify=false
-Categories=Utility;
-```
-
+Categories=Utility;Graphics;
 Then refresh:
 
-```bash
 update-desktop-database ~/.local/share/applications
-```
+Now ScreenDrawing will appear in the application menu.
 
-Now it appears in application menu.
+🎮 Controls
+Key	Function
+Mouse	Draw
+Ctrl + Z	Undo
+C	Clear canvas
+Ctrl + S	Save (Transparent PNG)
+ESC	Exit
+Ctrl + Q	Exit
+📌 Notes
+Optimized for Wayland environments
 
-## Controls
+Minimal dependencies (PyQt5 only)
 
-| Key      | Function         |
-| -------- | ---------------- |
-| Mouse    | Draw             |
-| Ctrl+Q,ESC   | Quit         |
-| C        | Clear canvas     |
-| Ctrl + Z | Undo             |
-| Ctrl + S | Screen Save      |
+Runs as fullscreen transparent overlay
 
-## Notes
+Designed for real-time screen annotation
 
-* Optimized for Wayland environments
-* Minimal dependencies
-* Designed for personal productivity and screen annotation
+Lightweight alternative to heavy annotation tools
 
-## License / 라이선스
+👤 Author
+Jeong SeongYong
+Email: iyagicom@gmail.com
 
-This project is licensed under the **GPL-2.0-or-later**.  
-이 프로젝트는 **GPL-2.0-or-later** 라이선스 하에 배포됩니다.  
-For more information, please see the [LICENSE](LICENSE) file.
+📜 License / 라이선스
+This project is licensed under the GPL-2.0-or-later.
+이 프로젝트는 GPL-2.0-or-later 라이선스 하에 배포됩니다.
+
+You are free to use, modify, and redistribute under GPL terms.
