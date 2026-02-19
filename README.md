@@ -8,6 +8,7 @@ Designed for simple on-screen annotation with pen, eraser, and undo.
 * Screen overlay drawing (Pen)
 * Eraser (pen strokes only)
 * Undo (Ctrl + Z)
+* Clear canvas (C key)
 * Temporary eraser (Ctrl key)
 * Straight line (Shift key)
 * Lightweight and fast
@@ -84,10 +85,10 @@ Now it appears in application menu.
 | Key      | Function         |
 | -------- | ---------------- |
 | Mouse    | Draw             |
-| Ctrl+Q,ESC   | Quit             |
+| Ctrl+Q,ESC   | Quit         |
 | C        | Clear canvas     |
 | Ctrl + Z | Undo             |
-| Ctrl + S | Screen Save             |
+| Ctrl + S | Screen Save      |
 
 ## Notes
 
