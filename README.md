@@ -34,10 +34,13 @@ Download `screendrawing.py`
 chmod +x screendrawing.py
 ```
 
-### 3. Move to global path (run anywhere)
+### 3. Install (No sudo, recommended)
 
 ```bash
-sudo mv screendrawing.py /usr/local/bin/screendrawing
+chmod +x screendrawing.py
+mkdir -p ~/.local/bin
+mv screendrawing.py ~/.local/bin/screendrawing
+
 ```
 
 Now you can run it from terminal:
