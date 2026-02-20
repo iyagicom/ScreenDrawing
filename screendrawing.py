@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.1.0
+Version: 1.1.2
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
-Homepage: https://github.com/iyagicom/ScreenDrawing
 Description: Lightweight Wayland screen drawing tool
              (pen, shapes, text, highlight, eraser, undo, screenshot)
-Environment: GNOME Wayland (Ubuntu tested)
-License: GPL-2.0-or-later
+License: GPL-2.0 or later
 """
 
 # Copyright (C) 2026 Jeong SeongYong
@@ -403,6 +401,9 @@ class ScreenDrawing(QtWidgets.QWidget):
         self.fill_enabled = False
         self.highlighter  = False
         self.eraser       = False
+        self._temp_eraser  = False   # Ctrl 임시 지우개
+        self._temp_line    = False   # Shift 임시 직선
+        self._saved_tool   = "pen"   # 임시 전환 전 도구 기억
 
         self.text_font   = QFont("Sans", 24)
         self._text_input = None
@@ -830,19 +831,57 @@ class ScreenDrawing(QtWidgets.QWidget):
 
     # ── 키보드 ────────────────────────────────
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
+        key = event.key()
+
+        # ── Ctrl: 임시 지우개 ──────────────────
+        if key == Qt.Key_Control and not self._temp_eraser and not self.drawing:
+            self._temp_eraser = True
+            self._saved_tool  = self.current_tool
+            self.eraser       = True
+            self.toolbar.set_eraser_active(True)
+            return
+
+        # ── Shift: 임시 직선 ───────────────────
+        if key == Qt.Key_Shift and not self._temp_line and not self.drawing:
+            self._temp_line  = True
+            self._saved_tool = self.current_tool
+            self.current_tool = "line"
+            self.toolbar.set_active("line")
+            return
+
+        # ── 기타 단축키 ────────────────────────
+        if key == Qt.Key_Escape:
             if self._text_input:
                 self._destroy_input()
             else:
                 self.force_exit()
-        elif event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
+        elif key == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
             self.undo()
-        elif event.key() == Qt.Key_S and event.modifiers() & Qt.ControlModifier:
+        elif key == Qt.Key_S and event.modifiers() & Qt.ControlModifier:
             self.save_snapshot()
-        elif event.key() == Qt.Key_Q and event.modifiers() & Qt.ControlModifier:
+        elif key == Qt.Key_Q and event.modifiers() & Qt.ControlModifier:
             self.force_exit()
-        elif event.key() == Qt.Key_C and not self._text_input:
+        elif key == Qt.Key_C and not self._text_input:
             self.clear_canvas()
+
+    def keyReleaseEvent(self, event):
+        key = event.key()
+
+        # ── Ctrl 해제: 임시 지우개 해제 ────────
+        if key == Qt.Key_Control and self._temp_eraser:
+            self._temp_eraser = False
+            self.eraser       = False
+            self.current_tool = self._saved_tool
+            self.toolbar.set_eraser_active(False)
+            self.toolbar.set_active(self._saved_tool)
+            self.update()
+
+        # ── Shift 해제: 임시 직선 해제 ─────────
+        if key == Qt.Key_Shift and self._temp_line:
+            self._temp_line   = False
+            self.current_tool = self._saved_tool
+            self.toolbar.set_active(self._saved_tool)
+            self.update()
 
 
 def main():
