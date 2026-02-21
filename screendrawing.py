@@ -12,6 +12,7 @@ License: GPL-2.0 or later
 
 import sys
 import os
+import json
 import locale
 import math
 from datetime import datetime
@@ -20,8 +21,11 @@ from PyQt5.QtCore import Qt, QPoint, QRect, QTimer, QPointF
 from PyQt5.QtGui import (QPainter, QPen, QColor, QPixmap, QBrush, QFont, QPolygonF)
 
 # ── 설정 상수 ──────────────────────────────────
-TOOLBAR_HEIGHT = 56
+TOOLBAR_HEIGHT = 58
 MAX_UNDO_STEPS = 50
+_SETTINGS_DIR  = os.path.join(os.path.expanduser("~"), ".local", "share", "screendrawing")
+os.makedirs(_SETTINGS_DIR, exist_ok=True)
+SETTINGS_PATH  = os.path.join(_SETTINGS_DIR, "settings.json")
 
 # ── 아이콘 정보 (이모지, 강조 색상) ───────────────
 ICONS = {
@@ -105,140 +109,283 @@ class FloatingTextInput(QtWidgets.QTextEdit):
             super().keyPressEvent(event)
 
 # ── 툴바 컴포넌트 ───────────────────────────────
+# ── 공통 버튼 베이스 스타일 ────────────────────────
+_BTN_BASE = """
+    QPushButton {{
+        background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+            stop:0 rgba(255,255,255,18), stop:1 rgba(255,255,255,6));
+        border: 1px solid rgba(255,255,255,14);
+        border-radius: 8px;
+        color: rgba(220,225,240,200);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        padding: {pad};
+    }}
+    QPushButton:hover {{
+        background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+            stop:0 rgba(255,255,255,32), stop:1 rgba(255,255,255,14));
+        border: 1px solid rgba(255,255,255,28);
+        color: rgba(255,255,255,240);
+    }}
+    QPushButton:pressed {{
+        background: rgba(0,0,0,30);
+        border: 1px solid rgba(255,255,255,10);
+    }}
+"""
+
+_BTN_TOOL  = _BTN_BASE.format(pad="0px 10px")
+_BTN_ICON  = _BTN_BASE.format(pad="0px 6px")   # 아이콘 전용 정방형
+_BTN_SMALL = _BTN_BASE.format(pad="0px 7px")
+
+def _active_style(accent: str) -> str:
+    """활성 도구 버튼 스타일 — accent 컬러 글로우"""
+    return f"""
+        QPushButton {{
+            background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                stop:0 {accent}55, stop:1 {accent}22);
+            border: 1px solid {accent}BB;
+            border-radius: 8px;
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            padding: 0px 10px;
+        }}
+        QPushButton:hover {{
+            background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                stop:0 {accent}77, stop:1 {accent}33);
+            border: 1px solid {accent}EE;
+        }}
+    """
+
+def _toggle_on_style(accent: str) -> str:
+    return f"""
+        QPushButton {{
+            background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                stop:0 {accent}44, stop:1 {accent}18);
+            border: 1px solid {accent}99;
+            border-radius: 8px;
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            padding: 0px 10px;
+        }}
+        QPushButton:hover {{
+            background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                stop:0 {accent}66, stop:1 {accent}28);
+        }}
+    """
+
 class ToolBar(QtWidgets.QWidget):
     """상단 도구 모음 클래스"""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedHeight(TOOLBAR_HEIGHT)
+        self.setAttribute(Qt.WA_TranslucentBackground)
         self.init_ui()
 
+    def paintEvent(self, event):
+        """반투명 다크 글래스 배경 직접 그리기"""
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        # 배경 채우기: 매우 어두운 반투명
+        p.setBrush(QBrush(QColor(14, 16, 26, 215)))
+        p.setPen(Qt.NoPen)
+        p.drawRect(self.rect())
+        # 하단 구분선: 미묘한 글로우
+        p.setPen(QPen(QColor(255, 255, 255, 22), 1))
+        p.drawLine(0, self.height() - 1, self.width(), self.height() - 1)
+        p.end()
+
     def init_ui(self):
-        # 전체 툴바 스타일 설정
+        # ── 툴바 배경: 반투명 다크 글래스 ──
         self.setStyleSheet("""
-            QWidget { background-color: #1A1D26; color: #E0E0E0; font-size: 13px; }
-            QLabel { background: transparent; color: #707080; font-size: 12px; }
-            QSpinBox { background-color: #2E3243; border: 1px solid #3E4460; border-radius: 6px; color: #E0E0E0; padding: 2px 4px; font-size: 13px; }
-            QSpinBox::up-button, QSpinBox::down-button { width: 16px; }
+            QWidget {
+                background: transparent;
+                color: rgba(220,225,240,200);
+                font-size: 14px;
+                font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+            }
+            QSpinBox {
+                background: rgba(255,255,255,12);
+                border: 1px solid rgba(255,255,255,18);
+                border-radius: 6px;
+                color: rgba(220,225,240,220);
+                padding: 1px 3px;
+                font-size: 14px;
+                font-weight: 500;
+                min-width: 48px;
+            }
+            QSpinBox::up-button, QSpinBox::down-button { width: 14px; }
+            QSpinBox:hover {
+                border: 1px solid rgba(255,255,255,35);
+                background: rgba(255,255,255,18);
+            }
         """)
 
         layout = QtWidgets.QHBoxLayout()
-        layout.setContentsMargins(10, 7, 10, 7)
-        layout.setSpacing(5)
+        layout.setContentsMargins(12, 7, 12, 7)
+        layout.setSpacing(3)
 
-        # 1. 도구 버튼 생성 (펜, 사각형, 원, 직선, 화살표, 글씨)
+        # ── 그룹 컨테이너 헬퍼 ──
+        def group(*widgets, spacing=3):
+            """위젯들을 하나의 pill 컨테이너로 묶기"""
+            w = QtWidgets.QWidget()
+            w.setStyleSheet("""
+                QWidget {
+                    background: rgba(255,255,255,7);
+                    border: 1px solid rgba(255,255,255,10);
+                    border-radius: 10px;
+                }
+            """)
+            h = QtWidgets.QHBoxLayout(w)
+            h.setContentsMargins(4, 3, 4, 3)
+            h.setSpacing(spacing)
+            for wgt in widgets:
+                h.addWidget(wgt)
+            return w
+
+        # ── 1. 도구 그룹 ──
         self.btns = {}
         tool_list = [
-            ("pen", "펜", "Pen"), ("rect", "사각형", "Rect"), ("ellipse", "원", "Ellipse"),
-            ("line", "직선", "Line"), ("arrow", "화살표", "Arrow"), ("text", "글씨", "Text")
+            ("pen",     "✏", "펜",     "Pen"),
+            ("rect",    "▭", "사각형", "Rect"),
+            ("ellipse", "◯", "원",     "Ellipse"),
+            ("line",    "╱", "직선",   "Line"),
+            ("arrow",   "➔", "화살표", "Arrow"),
+            ("text",    "T", "글씨",   "Text"),
         ]
-        for key, ko, en in tool_list:
-            emoji, _ = ICONS[key]
-            btn = QtWidgets.QPushButton(f"{emoji}  {tr(ko, en)}")
+        tool_widgets = []
+        for key, icon, ko, en in tool_list:
+            btn = QtWidgets.QPushButton(f"{icon}  {tr(ko, en)}")
             btn.setFixedHeight(38)
+            btn.setStyleSheet(_BTN_TOOL)
             btn.setProperty("tool_key", key)
-            layout.addWidget(btn)
             self.btns[key] = btn
+            tool_widgets.append(btn)
+        layout.addWidget(group(*tool_widgets, spacing=2))
 
-        layout.addWidget(self.create_separator())
+        layout.addSpacing(6)
 
-        # 2. 색상 및 두께 설정
-        self.color_preview = QtWidgets.QPushButton(tr("● 색상", "● Color"))
+        # ── 2. 색상 + 두께 그룹 ──
+        self.color_preview = QtWidgets.QPushButton("● 색상" if LANG == "ko" else "● Color")
         self.color_preview.setFixedHeight(38)
-        layout.addWidget(self.color_preview)
-
-        self.width_label = QtWidgets.QLabel(tr("두께", "Width"))
-        self.width_label.setStyleSheet("background-color: #3E4460; color: #FFFFFF; border-radius: 4px; padding: 2px 6px;")
-        layout.addWidget(self.width_label)
+        self.color_preview.setStyleSheet(_BTN_TOOL)
 
         self.width_spin = QtWidgets.QSpinBox()
-        self.width_spin.setRange(1, 120); self.width_spin.setValue(4); self.width_spin.setFixedWidth(64)
-        layout.addWidget(self.width_spin)
+        self.width_spin.setRange(1, 120)
+        self.width_spin.setValue(4)
+        self.width_spin.setFixedWidth(56)
+        self.width_spin.setFixedHeight(28)
 
-        layout.addWidget(self.create_separator())
+        lbl = QtWidgets.QLabel("W")
+        lbl.setStyleSheet("background:transparent; border:none; color:rgba(180,185,210,160); font-size:11px;")
 
-        # 3. 폰트 설정 및 퀵 사이즈 버튼
-        self.font_btn = QtWidgets.QPushButton(tr("A 폰트", "A Font"))
+        layout.addWidget(group(self.color_preview, lbl, self.width_spin, spacing=4))
+
+        layout.addSpacing(6)
+
+        # ── 3. 폰트 + 퀵사이즈 그룹 ──
+        self.font_btn = QtWidgets.QPushButton("A  폰트" if LANG == "ko" else "A  Font")
         self.font_btn.setFixedHeight(38)
-        layout.addWidget(self.font_btn)
+        self.font_btn.setStyleSheet(_BTN_TOOL)
 
+        size_widgets = [self.font_btn]
         for sz in ["10", "16", "24", "36"]:
             btn = QtWidgets.QPushButton(sz)
-            btn.setFixedWidth(38); btn.setFixedHeight(38)
+            btn.setFixedWidth(34)
+            btn.setFixedHeight(38)
             btn.setProperty("size_val", int(sz))
-            layout.addWidget(btn)
+            btn.setStyleSheet(_BTN_ICON)
             self.btns[f"fs{sz}"] = btn
+            size_widgets.append(btn)
+        layout.addWidget(group(*size_widgets, spacing=2))
 
-        layout.addWidget(self.create_separator())
+        layout.addSpacing(6)
 
-        # 4. 기능 버튼 (채우기, 형광, 지우개, 실행취소, 저장, 전체지우기)
-        self.fill_btn = self.create_func_btn("fill", "채우기", "Fill")
-        self.hl_btn = QtWidgets.QPushButton(tr("▌ 형광", "▌ Highlight"))
-        self.hl_btn.setFixedHeight(38)
-        self.eraser_btn = self.create_func_btn("eraser", "지우개", "Eraser")
-        
-        layout.addWidget(self.fill_btn)
-        layout.addWidget(self.create_separator())
-        layout.addWidget(self.hl_btn)
-        layout.addWidget(self.create_separator())
-        layout.addWidget(self.eraser_btn)
-        layout.addWidget(self.create_separator())
+        # ── 4. 토글 그룹 (채우기·형광·지우개) ──
+        self.fill_btn   = QtWidgets.QPushButton("■  " + tr("채우기", "Fill"))
+        self.hl_btn     = QtWidgets.QPushButton("▌  " + tr("형광", "Highlight"))
+        self.eraser_btn = QtWidgets.QPushButton("◻  " + tr("지우개", "Eraser"))
+        for b in (self.fill_btn, self.hl_btn, self.eraser_btn):
+            b.setFixedHeight(38)
+            b.setStyleSheet(_BTN_TOOL)
+        layout.addWidget(group(self.fill_btn, self.hl_btn, self.eraser_btn, spacing=2))
 
-        self.undo_btn = QtWidgets.QPushButton(tr("← 실행취소", "← Undo"))
-        self.snapshot_btn = QtWidgets.QPushButton(tr("[ ] 저장", "[ ] Save"))
-        self.clear_btn = self.create_func_btn("clear", "전체지우기", "Clear All")
-        
-        for b in [self.undo_btn, self.snapshot_btn, self.clear_btn]:
-            b.setFixedHeight(38); layout.addWidget(b)
+        layout.addSpacing(6)
+
+        # ── 5. 액션 그룹 (실행취소·저장·전체지우기) ──
+        self.undo_btn     = QtWidgets.QPushButton("↩  " + tr("되돌리기", "Undo"))
+        self.snapshot_btn = QtWidgets.QPushButton("⬡  " + tr("저장",     "Save"))
+        self.clear_btn    = QtWidgets.QPushButton("✕  " + tr("전체삭제", "Clear"))
+        for b in (self.undo_btn, self.snapshot_btn, self.clear_btn):
+            b.setFixedHeight(38)
+            b.setStyleSheet(_BTN_TOOL)
+        layout.addWidget(group(self.undo_btn, self.snapshot_btn, self.clear_btn, spacing=2))
 
         layout.addStretch()
 
-        # 5. 종료 버튼
-        self.exit_btn = QtWidgets.QPushButton(tr("✕ 종료", "✕ Exit"))
+        # ── 6. 종료 버튼 (단독, 붉은 포인트) ──
+        self.exit_btn = QtWidgets.QPushButton("⏻  " + tr("종료", "Exit"))
         self.exit_btn.setFixedHeight(38)
         self.exit_btn.setStyleSheet("""
-            QPushButton { background-color: #4A1E1E; border: 1px solid #7A3030; border-radius: 8px; color: #FF6B6B; padding: 5px 12px; }
-            QPushButton:hover { background-color: #6A2525; border-color: #EF5350; color: #FF9090; }
+            QPushButton {
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                    stop:0 rgba(220,50,50,80), stop:1 rgba(180,30,30,40));
+                border: 1px solid rgba(240,80,80,120);
+                border-radius: 8px;
+                color: rgba(255,140,140,230);
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                    stop:0 rgba(240,70,70,130), stop:1 rgba(200,40,40,70));
+                border: 1px solid rgba(255,100,100,200);
+                color: #FFFFFF;
+            }
+            QPushButton:pressed {
+                background: rgba(150,20,20,100);
+            }
         """)
         layout.addWidget(self.exit_btn)
         self.setLayout(layout)
 
-    def create_func_btn(self, key, ko, en):
-        emoji, _ = ICONS[key]
-        btn = QtWidgets.QPushButton(f"{emoji}  {tr(ko, en)}")
-        btn.setFixedHeight(38)
-        return btn
-
-    def create_separator(self):
-        f = QtWidgets.QFrame()
-        f.setFrameShape(QtWidgets.QFrame.VLine)
-        f.setStyleSheet("QFrame { color: #3E4460; min-width:1px; max-width:1px; margin: 6px 2px; }")
-        return f
-
     def update_button_styles(self, current_tool, fill, hl, eraser):
-        """도구 활성화 상태에 따른 버튼 스타일 업데이트 (외곽선 강조)"""
         for key in ["pen", "rect", "ellipse", "line", "arrow", "text"]:
             _, accent = ICONS[key]
-            is_active = (key == current_tool)
-            # 활성화 시에만 해당 도구의 색상으로 외곽선 강조
-            border = f"1.5px solid {accent}" if is_active else "1px solid #3E4460"
-            self.btns[key].setStyleSheet(f"QPushButton {{ background-color: #2E3243; border: {border}; border-radius: 8px; color: #E0E0E0; padding: 5px 11px; }} QPushButton:hover {{ background-color: #3A4060; }}")
+            if key == current_tool:
+                self.btns[key].setStyleSheet(_active_style(accent))
+            else:
+                self.btns[key].setStyleSheet(_BTN_TOOL)
 
-        # 기능 버튼 스타일 업데이트
-        self.fill_btn.setStyleSheet(self.get_toggle_style("fill", fill))
-        self.hl_btn.setStyleSheet(self.get_toggle_style("highlight", hl))
-        self.eraser_btn.setStyleSheet(self.get_toggle_style("eraser", eraser))
+        _, fa = ICONS["fill"];      self.fill_btn.setStyleSheet(_toggle_on_style(fa)   if fill   else _BTN_TOOL)
+        _, ha = ICONS["highlight"]; self.hl_btn.setStyleSheet(_toggle_on_style(ha)     if hl     else _BTN_TOOL)
+        _, ea = ICONS["eraser"];    self.eraser_btn.setStyleSheet(_toggle_on_style(ea) if eraser else _BTN_TOOL)
 
     def get_toggle_style(self, key, is_on):
         _, accent = ICONS[key]
-        border = f"1.5px solid {accent}" if is_on else "1px solid #3E4460"
-        return f"QPushButton {{ background-color: #2E3243; border: {border}; border-radius: 8px; color: #E0E0E0; padding: 5px 11px; }} QPushButton:hover {{ background-color: #3A4060; }}"
+        return _toggle_on_style(accent) if is_on else _BTN_TOOL
 
     def update_color_preview(self, color: QColor):
-        """[요청사항] 색상 버튼은 외곽선 강조 없이 아이콘과 글자만 현재 색상 반영"""
-        c_hex = color.name()
+        c = color.name()
         self.color_preview.setStyleSheet(f"""
-            QPushButton {{ background-color: #2E3243; border: 1px solid #3E4460; border-radius: 8px; color: {c_hex}; font-weight: bold; padding: 5px 11px; }}
-            QPushButton:hover {{ background-color: #3A4060; }}
+            QPushButton {{
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                    stop:0 rgba(255,255,255,18), stop:1 rgba(255,255,255,6));
+                border: 2px solid {c};
+                border-radius: 8px;
+                color: {c};
+                font-size: 12px;
+                font-weight: 700;
+                padding: 0px 10px;
+            }}
+            QPushButton:hover {{
+                background: rgba(255,255,255,22);
+                border: 2px solid {c};
+                color: #FFFFFF;
+            }}
         """)
 
 # ───────────────────────────────────────────────
@@ -263,14 +410,19 @@ class ScreenDrawing(QtWidgets.QWidget):
         self.canvas.fill(Qt.transparent)
 
     def init_variables(self):
-        """내부 상태 변수 초기화"""
+        """내부 상태 변수 초기화 (저장된 설정 우선 적용)"""
+        # ── 기본값 ──
         self.current_tool = "pen"
         self.pen_color = QColor(255, 50, 50)
         self.pen_width = 4
         self.fill_enabled = False
         self.highlighter = False
         self.eraser = False
-        
+        self.text_font = QFont("Sans", 24)
+
+        # ── 저장된 설정 불러오기 ──
+        self._load_settings()
+
         self.drawing = False
         self.start_point = QPoint()
         self.end_point = QPoint()
@@ -278,12 +430,52 @@ class ScreenDrawing(QtWidgets.QWidget):
         self._cursor_pos = QPoint(-100, -100)
         self._hl_layer = None
         self._text_input = None
-        self.text_font = QFont("Sans", 24)
         
         self.undo_stack = []
         self._temp_eraser = False
         self._temp_line = False
-        self._saved_tool = "pen"
+        self._saved_tool = self.current_tool
+
+    def _load_settings(self):
+        """~/.screendrawing_settings.json 에서 설정 불러오기"""
+        try:
+            with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            tool = data.get("tool", "pen")
+            valid_tools = ("pen", "rect", "ellipse", "line", "arrow", "text")
+            if tool in valid_tools:
+                self.current_tool = tool
+            color = data.get("color")
+            if color:
+                self.pen_color = QColor(color)
+            width = data.get("width")
+            if isinstance(width, int) and 1 <= width <= 120:
+                self.pen_width = width
+            self.fill_enabled = bool(data.get("fill", False))
+            self.highlighter = bool(data.get("highlight", False))
+            font_family = data.get("font_family")
+            font_size = data.get("font_size")
+            if font_family:
+                self.text_font = QFont(font_family, font_size if isinstance(font_size, int) else 24)
+        except Exception:
+            pass  # 파일 없거나 오류 시 기본값 유지
+
+    def _save_settings(self):
+        """현재 설정을 ~/.screendrawing_settings.json 에 저장"""
+        try:
+            data = {
+                "tool":        self.current_tool,
+                "color":       self.pen_color.name(),
+                "width":       self.pen_width,
+                "fill":        self.fill_enabled,
+                "highlight":   self.highlighter,
+                "font_family": self.text_font.family(),
+                "font_size":   self.text_font.pointSize(),
+            }
+            with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
 
     def init_ui(self):
         """UI 구성 및 이벤트 연결"""
@@ -309,6 +501,8 @@ class ScreenDrawing(QtWidgets.QWidget):
         self.toolbar.exit_btn.clicked.connect(self.force_exit)
 
         self.update_ui_styles()
+        # 저장된 두께를 스핀박스에 반영
+        self.toolbar.width_spin.setValue(self.pen_width)
 
     # ── 도구 및 상태 관리 ───────────────────────────
     def set_tool(self, tool):
@@ -577,7 +771,9 @@ class ScreenDrawing(QtWidgets.QWidget):
         msg.adjustSize(); msg.move((self.width()-msg.width())//2, TOOLBAR_HEIGHT + 10)
         msg.show(); QTimer.singleShot(2000, msg.deleteLater)
 
-    def force_exit(self): QtWidgets.QApplication.quit()
+    def force_exit(self):
+        self._save_settings()
+        QtWidgets.QApplication.quit()
 
     # ── 키보드 단축키 ──────────────────────────────
     def keyPressEvent(self, event):
@@ -591,6 +787,7 @@ class ScreenDrawing(QtWidgets.QWidget):
         elif key == Qt.Key_Escape: (self._text_input and self._destroy_input()) or self.force_exit()
         elif key == Qt.Key_Z and event.modifiers() & Qt.ControlModifier: self.undo()
         elif key == Qt.Key_S and event.modifiers() & Qt.ControlModifier: self.save_snapshot()
+        elif key == Qt.Key_Q and event.modifiers() & Qt.ControlModifier: self.force_exit()
         elif key == Qt.Key_C and not self._text_input: self.clear_canvas()
 
     def keyReleaseEvent(self, event):
