@@ -56,8 +56,6 @@ Tested on:
 - GNOME Wayland Session
 - Python 3.x + PyQt5
 
-> X11 is not officially tested but should work.
-
 ---
 
 ## 📦 Requirements
