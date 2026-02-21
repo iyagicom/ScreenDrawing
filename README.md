@@ -12,7 +12,12 @@ Designed for real-time on-screen annotation with pen, shapes, text, highlighter,
 - **Rectangle** — drag to draw a rectangle
 - **Ellipse** — drag to draw an ellipse
 - **Line** — drag to draw a straight line
-- **Text** — click to place inline text
+- **Arrow** — drag to draw an arrow
+- **Text** — click to place inline text  
+  - Enter → Line break  
+  - Ctrl+Enter → Confirm text (draw on canvas)  
+  - Escape → Cancel
+
 
 ### Options
 - **Fill** — fill rectangle/ellipse with color
@@ -172,6 +177,7 @@ ScreenDrawing will now appear in your application menu.
 | `ESC`        | Exit                            |
 | Hold `Ctrl`  | Temporary eraser                |
 | Hold `Shift` | Temporary straight line         |
+|`Ctrl + Enter`| Confirm text (draw on canvas)   |
 
 ### Toolbar Buttons
 
@@ -181,7 +187,11 @@ ScreenDrawing will now appear in your application menu.
 | Rect          | Rectangle                                     |
 | Ellipse       | Ellipse / circle                              |
 | Line          | Straight line                                 |
-| Text          | Inline text input                             |
+| Arrow         | Draw an arrow                                 |
+| Text          | Inline text input (on canvas)                 |
+|               | • Enter → Line break                          |
+|               | • Ctrl+Enter → Confirm text (draw on canvas)  |
+|               | • Escape → Cancel                             |
 | Color         | Open color picker                             |
 | Width         | Stroke width (also controls eraser size)      |
 | Font          | Open font selector                            |
@@ -194,6 +204,7 @@ ScreenDrawing will now appear in your application menu.
 | Save          | Save drawing as transparent PNG               |
 | Clear All     | Clear entire canvas                           |
 | Exit          | Close the application                         |
+
 
 ---
 
@@ -210,7 +221,8 @@ ScreenDrawing will now appear in your application menu.
 ## 👤 Author
 
 Jeong SeongYong  
-Email: iyagicom@gmail.com
+Email: iyagicom@gmail.com  
+GitHub: [iyagicom](https://github.com/iyagicom)
 
 ---
 
