@@ -29,9 +29,13 @@ Designed for real-time on-screen annotation with pen, shapes, text, highlighter,
 - **Stroke width** — adjustable thickness (shared with eraser size)
 - **Font selector** — choose font family and size
 - **Quick size buttons** — 10 / 16 / 24 / 36 (applies to both stroke width and font size)
-- **Undo** — up to 30 steps
+- **Undo** — up to 50 steps
 - **Clear All** — wipe the entire canvas
 - **Save** — export drawing layer as transparent PNG
+
+### Settings Auto-save
+Tool selection, color, stroke width, fill, highlight mode, and font are automatically saved on exit and restored on next launch.  
+Settings are stored at: `~/.local/share/screendrawing/settings.json`
 
 ### Keyboard Shortcuts
 - **Hold Ctrl** — temporary eraser (releases back to previous tool)
@@ -112,7 +116,7 @@ QT_QPA_PLATFORM=wayland screendrawing
 
 ## 💾 Save Behavior
 
-The **Save** button exports the drawing layer only as a transparent PNG (`~/screendrawing_YYYYMMDD_HHMMSS.png`).
+The **Save** button exports the drawing layer only as a transparent PNG (`~/drawing_YYYYMMDD_HHMMSS.png`).
 
 This is intentional and useful for:
 
@@ -168,16 +172,16 @@ ScreenDrawing will now appear in your application menu.
 
 ### Keyboard Shortcuts
 
-| Key          | Function                        |
-|--------------|---------------------------------|
-| `Ctrl + Z`   | Undo                            |
-| `Ctrl + S`   | Save (transparent PNG)          |
-| `Ctrl + Q`   | Exit                            |
-| `C`          | Clear canvas                    |
-| `ESC`        | Exit                            |
-| Hold `Ctrl`  | Temporary eraser                |
-| Hold `Shift` | Temporary straight line         |
-|`Ctrl + Enter`| Confirm text (draw on canvas)   |
+| Key            | Function                        |
+|----------------|---------------------------------|
+| `Ctrl + Z`     | Undo                            |
+| `Ctrl + S`     | Save (transparent PNG)          |
+| `Ctrl + Q`     | Exit                            |
+| `C`            | Clear canvas                    |
+| `ESC`          | Exit                            |
+| Hold `Ctrl`    | Temporary eraser                |
+| Hold `Shift`   | Temporary straight line         |
+| `Ctrl + Enter` | Confirm text (draw on canvas)   |
 
 ### Toolbar Buttons
 
@@ -200,7 +204,7 @@ ScreenDrawing will now appear in your application menu.
 | Fill          | Toggle fill for rectangle / ellipse           |
 | Highlight     | Toggle semi-transparent highlight mode        |
 | Eraser        | Toggle eraser mode                            |
-| Undo          | Undo last action (up to 30 steps)             |
+| Undo          | Undo last action (up to 50 steps)             |
 | Save          | Save drawing as transparent PNG               |
 | Clear All     | Clear entire canvas                           |
 | Exit          | Close the application                         |
@@ -215,6 +219,7 @@ ScreenDrawing will now appear in your application menu.
 - Highlight mode works on pen (freehand), line, rectangle, and ellipse
 - Holding `Ctrl` or `Shift` temporarily switches tools and restores them on release
 - All drawing is non-destructive to the desktop — only the overlay canvas is affected
+- Settings (tool, color, width, font, fill, highlight) are auto-saved on exit to `~/.local/share/screendrawing/settings.json`
 
 ---
 
