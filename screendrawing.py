@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.3.1
+Version: 1.3.2
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight Wayland screen drawing tool
