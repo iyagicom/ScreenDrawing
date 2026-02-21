@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.3.3
+Version: 1.3.4
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight Wayland screen drawing tool
@@ -243,7 +243,42 @@ class ToolBar(QtWidgets.QWidget):
                 font-weight: 500;
                 min-width: 48px;
             }
-            QSpinBox::up-button, QSpinBox::down-button { width: 14px; }
+            QSpinBox::up-button {
+                subcontrol-origin: border;
+                subcontrol-position: top right;
+                width: 20px;
+                height: 14px;
+                background: rgba(255,255,255,20);
+                border-left: 1px solid rgba(255,255,255,25);
+                border-bottom: 1px solid rgba(255,255,255,15);
+                border-top-right-radius: 6px;
+            }
+            QSpinBox::up-button:hover { background: rgba(255,255,255,50); }
+            QSpinBox::up-button:pressed { background: rgba(255,255,255,15); }
+            QSpinBox::up-arrow {
+                width: 0px; height: 0px;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-bottom: 6px solid rgba(210,220,255,230);
+            }
+            QSpinBox::down-button {
+                subcontrol-origin: border;
+                subcontrol-position: bottom right;
+                width: 20px;
+                height: 14px;
+                background: rgba(255,255,255,20);
+                border-left: 1px solid rgba(255,255,255,25);
+                border-top: 1px solid rgba(255,255,255,15);
+                border-bottom-right-radius: 6px;
+            }
+            QSpinBox::down-button:hover { background: rgba(255,255,255,50); }
+            QSpinBox::down-button:pressed { background: rgba(255,255,255,15); }
+            QSpinBox::down-arrow {
+                width: 0px; height: 0px;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 6px solid rgba(210,220,255,230);
+            }
             QSpinBox:hover {
                 border: 1px solid rgba(255,255,255,35);
                 background: rgba(255,255,255,18);
@@ -454,7 +489,8 @@ class ScreenDrawing(QtWidgets.QWidget):
         self.end_point = QPoint()
         self.path = QtGui.QPainterPath()
         self._cursor_pos = QPoint(-100, -100)
-        self._hl_layer = None
+        self._hl_layer  = None
+        self._pen_layer = None   # 일반 펜 임시 레이어 (가시 방지)
         self._text_input = None
         
         self.undo_stack = []
@@ -674,6 +710,9 @@ class ScreenDrawing(QtWidgets.QWidget):
         if self.highlighter and self.current_tool == "pen" and not self.eraser:
             self._hl_layer = QPixmap(self.canvas.size())
             self._hl_layer.fill(Qt.transparent)
+        elif not self.highlighter and self.current_tool == "pen" and not self.eraser:
+            self._pen_layer = QPixmap(self.canvas.size())
+            self._pen_layer.fill(Qt.transparent)
 
     def mouseMoveEvent(self, event):
         self._cursor_pos = event.pos()
@@ -708,12 +747,14 @@ class ScreenDrawing(QtWidgets.QWidget):
 
         # 일반 펜
         if self.current_tool == "pen":
-            p = QPainter(self.canvas)
-            p.setRenderHint(QPainter.Antialiasing)
-            p.setPen(self.get_pen(for_line=False))
-            self.path.lineTo(event.pos())
-            p.drawPath(self.path)
-            p.end()
+            if self._pen_layer:
+                self._pen_layer.fill(Qt.transparent)
+                p = QPainter(self._pen_layer)
+                p.setRenderHint(QPainter.Antialiasing)
+                p.setPen(self.get_pen(for_line=False))
+                self.path.lineTo(event.pos())
+                p.drawPath(self.path)
+                p.end()
             self.update()
             return
 
@@ -727,6 +768,10 @@ class ScreenDrawing(QtWidgets.QWidget):
         if self.highlighter and self.current_tool == "pen" and self._hl_layer:
             p = QPainter(self.canvas); p.drawPixmap(0, 0, self._hl_layer); p.end()
             self._hl_layer = None; self.update(); return
+
+        if not self.highlighter and self.current_tool == "pen" and self._pen_layer:
+            p = QPainter(self.canvas); p.drawPixmap(0, 0, self._pen_layer); p.end()
+            self._pen_layer = None; self.update(); return
 
         if not self.eraser or self.current_tool in ("rect", "ellipse"):
             p = QPainter(self.canvas); p.setRenderHint(QPainter.Antialiasing)
@@ -751,7 +796,8 @@ class ScreenDrawing(QtWidgets.QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.drawPixmap(0, 0, self.canvas)
-        if self._hl_layer: painter.drawPixmap(0, 0, self._hl_layer)
+        if self._pen_layer: painter.drawPixmap(0, 0, self._pen_layer)
+        if self._hl_layer:  painter.drawPixmap(0, 0, self._hl_layer)
 
         # 커서 미리보기 (펜 도구가 아닐 때는 형광펜 원이 나타나지 않음)
         if self._cursor_pos.y() > TOOLBAR_HEIGHT:
