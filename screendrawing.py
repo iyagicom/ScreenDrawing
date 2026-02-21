@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.3.2
+Version: 1.3.3
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight Wayland screen drawing tool
@@ -69,28 +69,53 @@ class FloatingTextInput(QtWidgets.QTextEdit):
         super().__init__(parent)
         self._pos, self._font, self._color = pos, font, color
         self.setFont(font)
+        # border 없이 색상만 설정 — 밑줄은 paintEvent에서 직접 그림
         self.setStyleSheet(
             f"QTextEdit {{ background: transparent; border: none; "
-            f"border-bottom: 2px solid {color.name()}; color: {color.name()}; padding: 0px; }}"
+            f"color: {color.name()}; padding: 0px; }}"
         )
-        self.move(pos.x(), pos.y() - self.fontMetrics().height())
-        self.setFixedSize(200, self.fontMetrics().height() + 10)
+        line_h = self.fontMetrics().height()
+        self.move(pos.x(), pos.y() - line_h)
+        # 초기 너비를 화면 오른쪽 끝까지 충분히 확보하여 자동 줄바꿈 방지
+        screen_w = parent.width() if parent else 1920
+        self._max_w = max(screen_w - pos.x() - 20, 400)
+        self.setFixedSize(self._max_w, line_h + 10)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
+        # 줄바꿈 비활성화 — 엔터 키로만 줄바꿈
+        self.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.setFocus()
         self.textChanged.connect(self._adjust_size)
         self.show()
 
-    def _adjust_size(self):
-        """내용에 따라 입력창 크기 자동 조절"""
-        doc = self.document()
-        doc.setTextWidth(max(self.width(), 200))
-        h = int(doc.size().height()) + 10
-        # 너비: 가장 긴 줄 기준
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        # 실제 텍스트 너비만큼만 밑줄 그리기
+        fm = self.fontMetrics()
         lines = self.toPlainText().split('\n')
-        max_w = max((self.fontMetrics().width(l) for l in lines), default=0) + 20
-        self.setFixedSize(max(max_w, 200), max(h, self.fontMetrics().height() + 10))
+        line_h = fm.height()
+        p = QPainter(self.viewport())
+        p.setPen(QPen(self._color, 2))
+        for i, line in enumerate(lines):
+            w = max(fm.horizontalAdvance(line) + 4, 10)
+            y = (i + 1) * line_h + 2
+            p.drawLine(0, y, w, y)
+        p.end()
+
+    def _adjust_size(self):
+        """내용에 따라 입력창 크기 자동 조절 (줄바꿈 없이 가로로만 확장)"""
+        lines = self.toPlainText().split('\n')
+        fm = self.fontMetrics()
+        line_h = fm.height()
+        # 너비: 가장 긴 줄 기준으로 오른쪽으로 확장
+        max_w = max((fm.horizontalAdvance(l) for l in lines), default=0) + 40
+        # 높이: 실제 줄 수 기준
+        h = line_h * len(lines) + 10
+        # document의 줄바꿈 너비를 충분히 크게 설정해 강제 래핑 방지
+        self.document().setTextWidth(-1)
+        parent_w = self.parent().width() if self.parent() else 1920
+        max_allowed_w = max(parent_w - self._pos.x() - 20, 400)
+        self.setFixedSize(min(max(max_w, 200), max_allowed_w), max(h, line_h + 10))
 
     def text(self):
         """QLineEdit 호환용 text() 메서드"""
@@ -104,7 +129,7 @@ class FloatingTextInput(QtWidgets.QTextEdit):
         elif event.key() == Qt.Key_Escape:
             self.setPlainText("")
             self.editingFinished.emit()
-        # 일반 Enter → 줄바꿈
+        # 일반 Enter → 줄바꿈 허용
         else:
             super().keyPressEvent(event)
 
@@ -374,7 +399,7 @@ class ToolBar(QtWidgets.QWidget):
             QPushButton {{
                 background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
                     stop:0 rgba(255,255,255,18), stop:1 rgba(255,255,255,6));
-                border: 2px solid {c};
+                border: 1px solid rgba(255,255,255,14);
                 border-radius: 8px;
                 color: {c};
                 font-size: 12px;
@@ -382,9 +407,10 @@ class ToolBar(QtWidgets.QWidget):
                 padding: 0px 10px;
             }}
             QPushButton:hover {{
-                background: rgba(255,255,255,22);
-                border: 2px solid {c};
-                color: #FFFFFF;
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                    stop:0 rgba(255,255,255,32), stop:1 rgba(255,255,255,14));
+                border: 1px solid rgba(255,255,255,28);
+                color: {c};
             }}
         """)
 
@@ -539,7 +565,15 @@ class ScreenDrawing(QtWidgets.QWidget):
     def get_pen(self, for_line=False):
         """
         [버그수정] 직선(line)이나 화살표(arrow)를 그릴 때는 FlatCap을 강제하여 라운딩(원형 잔상) 제거.
+        [버그수정2] 형광+채우기 모드에서 rect/ellipse는 외곽선을 NoPen으로 설정하여
+                   외곽선과 채우기가 반투명하게 겹쳐 이중으로 보이는 현상 제거.
         """
+        # 형광 + 채우기 + 도형(rect/ellipse) 조합이면 외곽선 제거하여 이중 겹침 방지
+        if (self.highlighter and self.fill_enabled
+                and self.current_tool in ("rect", "ellipse")
+                and not self.eraser and not for_line):
+            return Qt.NoPen
+
         color = QColor(self.pen_color)
         if self.highlighter: color.setAlpha(128)
 
