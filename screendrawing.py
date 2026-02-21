@@ -15,7 +15,7 @@ import os
 import locale
 import math
 from datetime import datetime
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QPoint, QRect, QTimer, QPointF
 from PyQt5.QtGui import (QPainter, QPen, QColor, QPixmap, QBrush, QFont, QPolygonF)
 
@@ -57,32 +57,50 @@ def tr(ko: str, en: str) -> str:
     return ko if LANG == "ko" else en
 
 # ── 텍스트 입력 위젯 ─────────────────────────────
-class FloatingTextInput(QtWidgets.QLineEdit):
-    """화면 위에서 직접 글씨를 입력받는 플로팅 입력창"""
+class FloatingTextInput(QtWidgets.QTextEdit):
+    """화면 위에서 직접 글씨를 입력받는 플로팅 입력창 (엔터로 줄바꿈, Ctrl+Enter로 확정)"""
+    editingFinished = QtCore.pyqtSignal()
+
     def __init__(self, parent, pos, font, color):
         super().__init__(parent)
         self._pos, self._font, self._color = pos, font, color
         self.setFont(font)
-        # 배경은 투명하게, 글자색은 현재 펜 색상으로
-        self.setStyleSheet(f"QLineEdit {{ background: transparent; border: none; border-bottom: 2px solid {color.name()}; color: {color.name()}; padding: 0px; }}")
+        self.setStyleSheet(
+            f"QTextEdit {{ background: transparent; border: none; "
+            f"border-bottom: 2px solid {color.name()}; color: {color.name()}; padding: 0px; }}"
+        )
         self.move(pos.x(), pos.y() - self.fontMetrics().height())
+        self.setFixedSize(200, self.fontMetrics().height() + 10)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
         self.setFocus()
-        self.textChanged.connect(self._adjust_width)
-        self._adjust_width()
+        self.textChanged.connect(self._adjust_size)
         self.show()
 
-    def _adjust_width(self):
-        """글자 수에 따라 입력창 너비 자동 조절"""
-        w = self.fontMetrics().width(self.text()) + 20
-        h = self.fontMetrics().height() + 10
-        self.setFixedSize(max(w, 100), h)
+    def _adjust_size(self):
+        """내용에 따라 입력창 크기 자동 조절"""
+        doc = self.document()
+        doc.setTextWidth(max(self.width(), 200))
+        h = int(doc.size().height()) + 10
+        # 너비: 가장 긴 줄 기준
+        lines = self.toPlainText().split('\n')
+        max_w = max((self.fontMetrics().width(l) for l in lines), default=0) + 20
+        self.setFixedSize(max(max_w, 200), max(h, self.fontMetrics().height() + 10))
+
+    def text(self):
+        """QLineEdit 호환용 text() 메서드"""
+        return self.toPlainText()
 
     def keyPressEvent(self, event):
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+        # Ctrl+Enter 또는 Ctrl+Return → 확정
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter) and event.modifiers() & Qt.ControlModifier:
             self.editingFinished.emit()
+        # Escape → 취소
         elif event.key() == Qt.Key_Escape:
-            self.setText("") # 취소 처리
+            self.setPlainText("")
             self.editingFinished.emit()
+        # 일반 Enter → 줄바꿈
         else:
             super().keyPressEvent(event)
 
@@ -384,7 +402,7 @@ class ScreenDrawing(QtWidgets.QWidget):
     def _commit_text(self):
         """입력된 텍스트를 캔버스에 그리기"""
         if not self._text_input: return
-        text = self._text_input.text().strip()
+        text = self._text_input.text().strip('\n').rstrip()
         pos, font, color = self._text_input._pos, self._text_input._font, self._text_input._color
         self._destroy_input()
         
@@ -394,7 +412,9 @@ class ScreenDrawing(QtWidgets.QWidget):
             p.setRenderHint(QPainter.Antialiasing)
             p.setFont(font)
             p.setPen(QPen(color))
-            p.drawText(pos, text)
+            line_height = QtGui.QFontMetrics(font).height()
+            for i, line in enumerate(text.split('\n')):
+                p.drawText(pos.x(), pos.y() + i * line_height, line)
             p.end()
             self.update()
 
