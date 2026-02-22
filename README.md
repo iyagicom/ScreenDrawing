@@ -1,3 +1,6 @@
+
+![Uploading 스크린샷 2026-02-22 18-42-06.png…]()
+
 # ScreenDrawing
 
 Lightweight screen drawing tool for Linux (Wayland optimized).  
