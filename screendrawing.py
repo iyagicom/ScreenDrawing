@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.4.3
+Version: 1.4.5
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight Wayland screen drawing tool
@@ -788,8 +788,9 @@ class ScreenDrawing(QtWidgets.QWidget):
         self.update_ui_styles()
 
     def set_width(self, val: int):
-        """펜/지우개 두께를 변경한다. (스핀박스 valueChanged 신호에 연결)"""
+        """펜/지우개 두께 및 텍스트 폰트 크기를 변경한다. (스핀박스 valueChanged 신호에 연결)"""
         self.pen_width = val
+        self.text_font.setPointSize(val)    # 두께 스핀박스가 글씨 크기도 동기화
 
     def toggle_fill(self):
         """채우기 모드를 ON/OFF 전환한다."""
