@@ -2,8 +2,8 @@
 
 # ScreenDrawing
 
-Lightweight screen drawing tool for Linux (Wayland optimized).  
-Designed for real-time on-screen annotation with pen, shapes, text, highlighter, eraser, and undo.
+A lightweight screen drawing tool for Linux (optimized for Wayland). 
+It's designed to allow you to annotate your screen in real time using pens, shapes, text, arrows, highlighters, erasers, and undo functions.
 
 ---
 
