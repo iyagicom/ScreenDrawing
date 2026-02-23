@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.4.5
+Version: 1.4.6
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight Wayland screen drawing tool
              (pen, shapes, text, highlight, eraser, undo, screenshot)
-License: GPL-2.0 or later
+License: GPL-2.0-or-later
 """
 
 # ────────────────────────────────────────────────
@@ -1003,7 +1003,11 @@ class ScreenDrawing(QtWidgets.QWidget):
     def _open_text_input(self, pos: QPoint):
         """클릭한 위치에 FloatingTextInput 을 생성한다."""
         self._destroy_input()
-        self._text_input = FloatingTextInput(self, pos, self.text_font, self.pen_color)
+        # 형광 모드면 50% 투명도 적용한 색상으로 입력창 생성
+        color = QColor(self.pen_color)
+        if self.highlighter:
+            color.setAlpha(128)
+        self._text_input = FloatingTextInput(self, pos, self.text_font, color)
         self._text_input.editingFinished.connect(self._commit_text)
 
     def _destroy_input(self):
@@ -1427,9 +1431,12 @@ class ScreenDrawing(QtWidgets.QWidget):
 #  진입점
 # ════════════════════════════════════════════════
 
-if __name__ == "__main__":
+def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
     window = ScreenDrawing()
     window.showFullScreen()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
