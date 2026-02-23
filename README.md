@@ -1,6 +1,6 @@
 # ScreenDrawing
 
-Lightweight screen drawing tool for Linux (Wayland optimized).  
+Lightweight screen drawing tool for Linux.  
 Designed for real-time on-screen annotation with pen, shapes, text, highlighter, eraser, and undo.
 
 ---
@@ -43,7 +43,6 @@ Settings are stored at: `~/.local/share/screendrawing/settings.json`
 
 ### Other
 - Auto language detection (Korean / English based on system locale)
-- Wayland compatible (GNOME tested)
 - Lightweight — PyQt5 only, no extra dependencies
 
 ---
@@ -53,7 +52,6 @@ Settings are stored at: `~/.local/share/screendrawing/settings.json`
 Tested on:
 
 - Ubuntu 24.04
-- GNOME Wayland Session
 - Python 3.x + PyQt5
 
 ---
@@ -66,21 +64,7 @@ pip install PyQt5
 
 ---
 
-## 📦 Installation via pip (Recommended)
-
-```bash
-pip install screendrawing --break-system-packages
-```
-
-Then run from anywhere:
-
-```bash
-screendrawing
-```
-
----
-
-## 📥 Manual Installation (without pip)
+## 📥 Installation (No sudo, Recommended)
 
 ### 1. Download
 
@@ -111,18 +95,6 @@ Now you can run it from anywhere:
 
 ```bash
 screendrawing
-```
-
----
-
-## ⚠️ Wayland (GNOME) Notes
-
-ScreenDrawing is primarily developed and tested on GNOME Wayland.
-
-If the toolbar does not appear, try running with the platform flag:
-
-```bash
-QT_QPA_PLATFORM=wayland screendrawing
 ```
 
 ---
