@@ -1,5 +1,3 @@
-![Screenshot](ScreenDrawing.png)
-
 # ScreenDrawing
 
 Lightweight screen drawing tool for Linux (Wayland optimized).  
