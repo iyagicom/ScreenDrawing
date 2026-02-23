@@ -2,8 +2,8 @@
 
 # ScreenDrawing
 
-A lightweight screen drawing tool for Linux (optimized for Wayland). 
-It's designed to allow you to annotate your screen in real time using pens, shapes, text, arrows, highlighters, erasers, and undo functions.
+Lightweight screen drawing tool for Linux (Wayland optimized).  
+Designed for real-time on-screen annotation with pen, shapes, text, highlighter, eraser, and undo.
 
 ---
 
@@ -68,7 +68,21 @@ pip install PyQt5
 
 ---
 
-## 📥 Installation (No sudo, Recommended)
+## 📦 Installation via pip (Recommended)
+
+```bash
+pip install screendrawing --break-system-packages
+```
+
+Then run from anywhere:
+
+```bash
+screendrawing
+```
+
+---
+
+## 📥 Manual Installation (without pip)
 
 ### 1. Download
 
@@ -81,6 +95,7 @@ chmod +x screendrawing.py
 ```
 
 ### 3. Install to user PATH
+![Screenshot](ScreenDrawing.png)
 
 ```bash
 mkdir -p ~/.local/bin
