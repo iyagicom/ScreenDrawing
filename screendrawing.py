@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.4.6
+Version: 1.5.0
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
-Description: Lightweight Wayland screen drawing tool
+Description: Lightweight screen drawing tool for Linux and Windows
              (pen, shapes, text, highlight, eraser, undo, screenshot)
 License: GPL-2.0-or-later
 """
@@ -27,6 +27,25 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QPoint, QRect, QTimer, QPointF
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QBrush, QFont, QPolygonF
 
+# ────────────────────────────────────────────────
+#  Windows API (윈도우 전용)
+# ────────────────────────────────────────────────
+if sys.platform == "win32":
+    import ctypes
+    import ctypes.wintypes
+    GWL_EXSTYLE    = -20
+    WS_EX_LAYERED  = 0x00080000
+    WS_EX_TRANSPARENT = 0x00000020
+    WS_EX_NOACTIVATE  = 0x08000000
+    LWA_ALPHA      = 0x00000002
+    SWP_NOMOVE     = 0x0002
+    SWP_NOSIZE     = 0x0001
+    HWND_TOPMOST   = -1
+    SetWindowPos   = ctypes.windll.user32.SetWindowPos
+    SetWindowLong  = ctypes.windll.user32.SetWindowLongW
+    GetWindowLong  = ctypes.windll.user32.GetWindowLongW
+    SetLayeredWindowAttributes = ctypes.windll.user32.SetLayeredWindowAttributes
+
 
 # ════════════════════════════════════════════════
 #  전역 상수
@@ -38,9 +57,12 @@ TOOLBAR_HEIGHT = 58
 # 실행취소 최대 단계 수
 MAX_UNDO_STEPS = 50
 
-# 설정 파일 저장 경로: ~/.local/share/screendrawing/settings.json
-_SETTINGS_DIR = os.path.join(os.path.expanduser("~"), ".local", "share", "screendrawing")
-os.makedirs(_SETTINGS_DIR, exist_ok=True)          # 디렉토리 없으면 자동 생성
+# 설정 파일 저장 경로 (OS별 분기)
+if sys.platform == "win32":
+    _SETTINGS_DIR = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "screendrawing")
+else:
+    _SETTINGS_DIR = os.path.join(os.path.expanduser("~"), ".local", "share", "screendrawing")
+os.makedirs(_SETTINGS_DIR, exist_ok=True)
 SETTINGS_PATH = os.path.join(_SETTINGS_DIR, "settings.json")
 
 # 각 도구의 (아이콘 이모지, 활성화 강조 색상) 매핑
@@ -73,7 +95,7 @@ def detect_language() -> str:
         if val.lower().startswith("ko"):
             return "ko"
     try:
-        code, _ = locale.getdefaultlocale()
+        code = locale.getlocale()[0]
         if code and code.lower().startswith("ko"):
             return "ko"
     except Exception:
@@ -619,13 +641,24 @@ class ScreenDrawing(QtWidgets.QWidget):
         self.init_variables()
         self.init_ui()
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._apply_win32_overlay()
+
     # ── 윈도우 초기화 ──────────────────────────────
     def init_window(self):
         """
         전체화면 투명 오버레이 윈도우를 설정한다.
         항상 다른 창 위에 표시되며 배경이 완전히 투명하다.
         """
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        if sys.platform == "win32":
+            self.setWindowFlags(
+                Qt.FramelessWindowHint |
+                Qt.WindowStaysOnTopHint |
+                Qt.Tool
+            )
+        else:
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)     # 버튼 클릭 없이도 mouseMoveEvent 발생
 
@@ -635,6 +668,18 @@ class ScreenDrawing(QtWidgets.QWidget):
         # 그림이 저장되는 투명 캔버스 (화면 크기와 동일)
         self.canvas = QPixmap(geo.size())
         self.canvas.fill(Qt.transparent)
+
+    def _apply_win32_overlay(self):
+        """윈도우 API로 투명 오버레이 설정 (Windows 전용)"""
+        if sys.platform != "win32":
+            return
+        hwnd = int(self.winId())
+        ex_style = GetWindowLong(hwnd, GWL_EXSTYLE)
+        # LAYERED만 추가 (WS_EX_TRANSPARENT 제거 — 마우스 이벤트 받아야 함)
+        new_style = (ex_style | WS_EX_LAYERED) & ~WS_EX_TRANSPARENT
+        SetWindowLong(hwnd, GWL_EXSTYLE, new_style)
+        # 항상 최상위로
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)
 
     # ── 상태 변수 초기화 ───────────────────────────
     def init_variables(self):
@@ -991,10 +1036,10 @@ class ScreenDrawing(QtWidgets.QWidget):
         if self.highlighter:
             color.setAlpha(128)
 
+        # 몸통+화살촉을 하나의 7각형으로 합쳐 경계 틈 제거
         painter.setPen(Qt.NoPen)
         painter.setBrush(QBrush(color))
-        painter.drawPolygon(QPolygonF([p1, p2, p3, p4]))    # 몸통
-        painter.drawPolygon(QPolygonF([h1, h2, h3]))        # 화살촉
+        painter.drawPolygon(QPolygonF([p1, p4, h2, h1, h3, p3, p2]))
 
     # ════════════════════════════════════════════
     #  텍스트 입력 처리
@@ -1242,6 +1287,10 @@ class ScreenDrawing(QtWidgets.QWidget):
         """
         painter = QPainter(self)
 
+        # Windows: 투명 픽셀은 마우스 이벤트가 통과되므로 alpha=1로 채워 이벤트 수신
+        if sys.platform == "win32":
+            painter.fillRect(self.rect(), QColor(0, 0, 0, 1))
+
         # 1. 확정된 그림 (canvas)
         painter.drawPixmap(0, 0, self.canvas)
 
@@ -1432,6 +1481,14 @@ class ScreenDrawing(QtWidgets.QWidget):
 # ════════════════════════════════════════════════
 
 def main():
+    if sys.platform == "win32":
+        # cmd 창 숨기기
+        import ctypes
+        hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+        ctypes.windll.user32.ShowWindow(hwnd, 0)
+        # 윈도우 고DPI 대응
+        QtWidgets.QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+        QtWidgets.QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
     window = ScreenDrawing()
