@@ -1,6 +1,6 @@
 # ScreenDrawing
 
-Lightweight screen drawing tool for Linux.  
+Lightweight screen drawing tool for Linux and Windows.  
 Designed for real-time on-screen annotation with pen, shapes, text, highlighter, eraser, and undo.
 
 ---
@@ -51,7 +51,8 @@ Settings are stored at: `~/.local/share/screendrawing/settings.json`
 
 Tested on:
 
-- Ubuntu 24.04
+- Linux (Ubuntu 24.04) — X11 and Wayland
+- Windows 11
 - Python 3.x + PyQt5
 
 ---
@@ -64,19 +65,37 @@ pip install PyQt5
 
 ---
 
-## 📥 Installation (No sudo, Recommended)
+## 🚀 Installation
 
-### 1. Download
+### ✅ Option 1 — Windows EXE (No Python required)
+
+Download `screendrawing.exe` from the [Releases](https://github.com/iyagicom/ScreenDrawing/releases) page and run it directly. No installation needed.
+
+### ✅ Option 2 — pip install (Linux & Windows)
+
+```bash
+pip install screendrawing --break-system-packages
+```
+
+Then run from anywhere:
+
+```bash
+screendrawing
+```
+
+### ✅ Option 3 — Manual (Linux)
+
+#### 1. Download
 
 Download `screendrawing.py` from this repository.
 
-### 2. Make executable
+#### 2. Make executable
 
 ```bash
 chmod +x screendrawing.py
 ```
 
-### 3. Install to user PATH
+#### 3. Install to user PATH
 ![Screenshot](ScreenDrawing.png)
 
 ```bash
