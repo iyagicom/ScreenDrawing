@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.5.0
+Version: 1.5.1
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight screen drawing tool for Linux and Windows
@@ -707,6 +707,8 @@ class ScreenDrawing(QtWidgets.QWidget):
 
         # 마우스 커서 위치 (커서 미리보기용, 초기값은 화면 밖)
         self._cursor_pos = QPoint(-100, -100)
+        # 지우개 이전 마우스 위치 (빠른 이동 시 점점이 문제 방지용)
+        self._last_eraser_pos = QPoint()
 
         # 임시 레이어 — 드래그 중에만 사용, 마우스를 떼면 canvas에 합성
         self._hl_layer  = None  # 형광펜 임시 레이어
@@ -1132,6 +1134,7 @@ class ScreenDrawing(QtWidgets.QWidget):
         # 드로잉 시작
         self.drawing = True
         self._push_undo()
+        self._last_eraser_pos = QPoint()   # 지우개 이전 위치 초기화
         self.path = QtGui.QPainterPath()
         self.path.moveTo(event.pos())
 
@@ -1167,11 +1170,15 @@ class ScreenDrawing(QtWidgets.QWidget):
         if self.eraser and self.current_tool not in ("rect", "ellipse", "line", "arrow"):
             p = QPainter(self.canvas)
             p.setCompositionMode(QPainter.CompositionMode_Clear)
-            p.setBrush(QBrush(Qt.black))
-            p.setPen(Qt.NoPen)
-            r = self.pen_width // 2
-            p.drawEllipse(event.pos(), r, r)
+            # 이전 위치에서 현재 위치까지 선으로 이어서 지워야 빠른 이동에도 끊기지 않음
+            erase_pen = QPen(Qt.black, self.pen_width, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
+            p.setPen(erase_pen)
+            if not self._last_eraser_pos.isNull():
+                p.drawLine(self._last_eraser_pos, event.pos())
+            else:
+                p.drawPoint(event.pos())
             p.end()
+            self._last_eraser_pos = event.pos()
             self.update()
             return
 
