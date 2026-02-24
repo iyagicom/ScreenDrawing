@@ -59,8 +59,14 @@ Tested on:
 
 ## 📦 Requirements
 
+**Linux:**
 ```bash
 pip install PyQt5
+```
+
+**Windows:**
+```bash
+pip install PyQt5 pywin32
 ```
 
 ---
@@ -73,8 +79,14 @@ Download `screendrawing.exe` from the [Releases](https://github.com/iyagicom/Scr
 
 ### ✅ Option 2 — pip install (Linux & Windows)
 
+**Linux:**
 ```bash
 pip install screendrawing --break-system-packages
+```
+
+**Windows:**
+```bash
+pip install screendrawing[windows]
 ```
 
 Then run from anywhere:
