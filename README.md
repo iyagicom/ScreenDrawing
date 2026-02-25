@@ -13,16 +13,21 @@ Designed for real-time on-screen annotation with pen, shapes, text, highlighter,
 - **Ellipse** — drag to draw an ellipse
 - **Line** — drag to draw a straight line
 - **Arrow** — drag to draw an arrow
-- **Text** — click to place inline text  
-  - Enter → Line break  
-  - Ctrl+Enter → Confirm text (draw on canvas)  
+- **Text** — click to place inline text
+  - Enter → Line break
+  - Ctrl+Enter → Confirm text (draw on canvas)
   - Escape → Cancel
 
-
 ### Options
-- **Fill** — fill rectangle/ellipse with color
-- **Highlight** — semi-transparent overlay (pen, line, rect, ellipse)
-- **Eraser** — remove strokes by brush or shape area
+- **Fill** — fill rectangle / ellipse / arrow with color
+- **Highlight** — semi-transparent overlay (pen, line, rect, ellipse, arrow)
+- **Eraser** — remove strokes by brush or shape area (pen, rect, ellipse, line, arrow)
+
+### Drawing / Mouse Mode
+- **Drawing mode** — canvas is active, all tools available
+- **Mouse passthrough mode** — canvas hides so the mouse interacts freely with windows below; your drawing remains visible as a static overlay
+  - **Single click** the Drawing button → clear canvas and switch to mouse mode
+  - **Double click** the Drawing button → keep drawing and switch to mouse mode
 
 ### Convenience
 - **Color picker** — choose any pen color
@@ -35,7 +40,9 @@ Designed for real-time on-screen annotation with pen, shapes, text, highlighter,
 
 ### Settings Auto-save
 Tool selection, color, stroke width, fill, highlight mode, and font are automatically saved on exit and restored on next launch.  
-Settings are stored at: `~/.local/share/screendrawing/settings.json`
+Settings are stored at:
+- **Linux:** `~/.local/share/screendrawing/settings.json`
+- **Windows:** `%APPDATA%\screendrawing\settings.json`
 
 ### Keyboard Shortcuts
 - **Hold Ctrl** — temporary eraser (releases back to previous tool)
@@ -108,6 +115,7 @@ chmod +x screendrawing.py
 ```
 
 #### 3. Install to user PATH
+
 ![Screenshot](ScreenDrawing.png)
 
 ```bash
@@ -188,43 +196,43 @@ ScreenDrawing will now appear in your application menu.
 
 ### Keyboard Shortcuts
 
-| Key            | Function                        |
-|----------------|---------------------------------|
-| `Ctrl + Z`     | Undo                            |
-| `Ctrl + S`     | Save (transparent PNG)          |
-| `Ctrl + Q`     | Exit                            |
-| `C`            | Clear canvas                    |
-| `ESC`          | Exit                            |
-| Hold `Ctrl`    | Temporary eraser                |
-| Hold `Shift`   | Temporary straight line         |
-| `Ctrl + Enter` | Confirm text (draw on canvas)   |
+| Key            | Function                                       |
+|----------------|------------------------------------------------|
+| `Ctrl + Z`     | Undo                                           |
+| `Ctrl + S`     | Save (transparent PNG)                         |
+| `Ctrl + Q`     | Exit                                           |
+| `C`            | Clear canvas                                   |
+| `ESC`          | Exit (or cancel text input if active)          |
+| Hold `Ctrl`    | Temporary eraser (restores on release)         |
+| Hold `Shift`   | Temporary straight line (restores on release)  |
+| `Ctrl + Enter` | Confirm text (draw on canvas)                  |
 
 ### Toolbar Buttons
 
-| Button        | Function                                      |
-|---------------|-----------------------------------------------|
-| Pen           | Freehand drawing                              |
-| Rect          | Rectangle                                     |
-| Ellipse       | Ellipse / circle                              |
-| Line          | Straight line                                 |
-| Arrow         | Draw an arrow                                 |
-| Text          | Inline text input (on canvas)                 |
-|               | • Enter → Line break                          |
-|               | • Ctrl+Enter → Confirm text (draw on canvas)  |
-|               | • Escape → Cancel                             |
-| Color         | Open color picker                             |
-| Width         | Stroke width (also controls eraser size)      |
-| Font          | Open font selector                            |
-| Size          | Font size                                     |
-| 10/16/24/36   | Quick size preset (stroke width + font size)  |
-| Fill          | Toggle fill for rectangle / ellipse           |
-| Highlight     | Toggle semi-transparent highlight mode        |
-| Eraser        | Toggle eraser mode                            |
-| Undo          | Undo last action (up to 50 steps)             |
-| Save          | Save drawing as transparent PNG               |
-| Clear All     | Clear entire canvas                           |
-| Exit          | Close the application                         |
-
+| Button         | Function                                                  |
+|----------------|-----------------------------------------------------------|
+| Pen            | Freehand drawing                                          |
+| Rect           | Rectangle                                                 |
+| Ellipse        | Ellipse / circle                                          |
+| Line           | Straight line                                             |
+| Arrow          | Draw an arrow                                             |
+| Text           | Inline text input (on canvas)                             |
+|                | • Enter → Line break                                      |
+|                | • Ctrl+Enter → Confirm text (draw on canvas)              |
+|                | • Escape → Cancel                                         |
+| Color          | Open color picker                                         |
+| W + Spinner    | Stroke width (also controls eraser size)                  |
+| Font           | Open font selector                                        |
+| 10/16/24/36    | Quick size preset (stroke width + font size)              |
+| Fill           | Toggle fill for rectangle / ellipse / arrow               |
+| Highlight      | Toggle semi-transparent highlight mode                    |
+| Eraser         | Toggle eraser mode                                        |
+| Undo           | Undo last action (up to 50 steps)                         |
+| Save           | Save drawing as transparent PNG                           |
+| Clear All      | Clear entire canvas                                       |
+| Drawing ✎      | Single click → clear canvas + switch to mouse mode        |
+|                | Double click → keep drawing + switch to mouse mode        |
+| Exit           | Save settings and close the application                   |
 
 ---
 
@@ -232,10 +240,12 @@ ScreenDrawing will now appear in your application menu.
 
 - Runs as a fullscreen transparent overlay
 - Eraser size is shared with the stroke width setting
-- Highlight mode works on pen (freehand), line, rectangle, and ellipse
+- Highlight mode works on pen (freehand), line, rectangle, ellipse, and arrow
+- Eraser mode works on pen (freehand), line, rectangle, ellipse, and arrow
 - Holding `Ctrl` or `Shift` temporarily switches tools and restores them on release
+- In mouse passthrough mode, the toolbar remains fully clickable
 - All drawing is non-destructive to the desktop — only the overlay canvas is affected
-- Settings (tool, color, width, font, fill, highlight) are auto-saved on exit to `~/.local/share/screendrawing/settings.json`
+- Settings (tool, color, width, font, fill, highlight) are auto-saved on exit
 
 ---
 
