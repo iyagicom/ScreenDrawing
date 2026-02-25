@@ -1525,9 +1525,13 @@ class ScreenDrawing(QtWidgets.QWidget):
         painter = QPainter(self)
 
         # Windows: 완전히 투명한 픽셀은 마우스 이벤트가 통과되므로
-        #          alpha=1로 채워서 이벤트 수신 보장
+        #          alpha=1로 채워서 이벤트 수신 보장.
+        #          단, 툴바 영역(TOOLBAR_HEIGHT 위)은 제외 —
+        #          툴바가 독립 윈도우로 그 위에 있지만 alpha=1 레이어가
+        #          클릭을 가로채므로 툴바 아래 캔버스 영역에만 적용한다.
         if sys.platform == "win32":
-            painter.fillRect(self.rect(), QColor(0, 0, 0, 1))
+            canvas_rect = self.rect().adjusted(0, TOOLBAR_HEIGHT, 0, 0)
+            painter.fillRect(canvas_rect, QColor(0, 0, 0, 1))
 
         # 1. 확정된 그림
         painter.drawPixmap(0, 0, self.canvas)
