@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.6.0
+Version: 1.7.0
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight screen drawing tool for Linux and Windows
@@ -734,6 +734,17 @@ class ToolBar(QtWidgets.QWidget):
         self.drawing_btn.setStyleSheet(
             _BTN_DRAWING_ON if drawing else _BTN_DRAWING_OFF
         )
+
+        geo = QtWidgets.QApplication.primaryScreen().geometry()
+
+        if drawing:
+            # 그리기 모드: 전체 툴바
+            self.setFixedSize(geo.width(), TOOLBAR_HEIGHT)
+            self.move(geo.x(), geo.y())
+        else:
+            # 마우스 모드: 버튼 2개만 보이는 작은 툴바 (오른쪽 상단)
+            self.setFixedSize(220, TOOLBAR_HEIGHT)
+            self.move(geo.right() - 220, geo.y())
 
     def update_color_preview(self, color: QColor) -> None:
         """
