@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.7.3
+Version: 1.7.4
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight screen drawing tool for Linux and Windows
@@ -465,7 +465,23 @@ class ToolBar(QtWidgets.QWidget):
         # 캔버스 참조 (현재 미사용, 향후 확장용)
         self._canvas_ref = canvas_ref
 
+        # 툴바 드래그 이동용
+        self._drag_pos = None
+
         self._init_ui()
+
+    # ── 드래그 이동 ──────────────────────────────
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        if event.button() == Qt.LeftButton:
+            self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        if event.buttons() == Qt.LeftButton and self._drag_pos is not None:
+            self.move(event.globalPos() - self._drag_pos)
+
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        self._drag_pos = None
 
     # ── 배경 렌더링 ──────────────────────────────
 
