@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "screendrawing"
+version = "1.7.0"
+description = "Lightweight screen drawing tool for Linux and Windows"
+readme = "README.md"
+authors = [{ name = "Jeong SeongYong", email = "iyagicom@gmail.com" }]
+license = { text = "GPL-2.0-or-later" }
+requires-python = ">=3.7"
+dependencies = [
+    "PyQt5"
+]
+
+[project.optional-dependencies]
+windows = ["pywin32"]
+
+[project.gui-scripts]
+screendrawing = "screendrawing:main"
+
+[tool.setuptools]
+py-modules = ["screendrawing"]
