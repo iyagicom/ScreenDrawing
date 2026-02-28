@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.7.2
+Version: 1.7.3
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight screen drawing tool for Linux and Windows
@@ -1722,6 +1722,7 @@ class ScreenDrawing(QtWidgets.QWidget):
             self._passthrough_overlay.close()
             self._passthrough_overlay = None
         self.toolbar.close()
+        self.close()
         QtWidgets.QApplication.quit()
 
     # ════════════════════════════════════════════
