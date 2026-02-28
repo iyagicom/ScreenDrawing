@@ -84,7 +84,28 @@ pip install PyQt5 pywin32
 
 Download `screendrawing.exe` from the [Releases](https://github.com/iyagicom/ScreenDrawing/releases) page and run it directly. No installation needed.
 
-### ✅ Option 2 — pip install (Linux & Windows)
+### ⭐ Option 2 — pipx (Recommended for Linux & Windows)
+
+Install pipx first (if not installed):
+
+```bash
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+```
+
+Install ScreenDrawing:
+
+```bash
+pipx install screendrawing
+```
+
+Then run from anywhere:
+
+```bash
+screendrawing
+```
+
+### ✅ Option 3 — pip install (Linux & Windows)
 
 **Linux:**
 ```bash
@@ -102,7 +123,7 @@ Then run from anywhere:
 screendrawing
 ```
 
-### ✅ Option 3 — Manual (Linux)
+### ✅ Option 4 — Manual (Linux)
 
 #### 1. Download
 
@@ -112,6 +133,7 @@ Download `screendrawing.py` from this repository.
 
 ```bash
 chmod +x screendrawing.py
+./screendrawing.py
 ```
 
 #### 3. Install to user PATH
