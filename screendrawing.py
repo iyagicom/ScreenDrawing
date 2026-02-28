@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.7.0
+Version: 1.7.1
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight screen drawing tool for Linux and Windows
@@ -737,6 +737,12 @@ class ToolBar(QtWidgets.QWidget):
 
         geo = QtWidgets.QApplication.primaryScreen().geometry()
 
+        # Wine/Windows 호환: 크기 변경 전후로 hide/show 처리
+        # Wine에서 setFixedSize+move 후 클릭이 안 되는 문제 방지
+        was_visible = self.isVisible()
+        if was_visible:
+            self.hide()
+
         if drawing:
             # 그리기 모드: 전체 툴바
             self.setFixedSize(geo.width(), TOOLBAR_HEIGHT)
@@ -745,6 +751,9 @@ class ToolBar(QtWidgets.QWidget):
             # 마우스 모드: 버튼 2개만 보이는 작은 툴바 (오른쪽 상단)
             self.setFixedSize(220, TOOLBAR_HEIGHT)
             self.move(geo.right() - 220, geo.y())
+
+        if was_visible:
+            self.show()
 
     def update_color_preview(self, color: QColor) -> None:
         """
@@ -1801,6 +1810,11 @@ def main() -> None:
 
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
+
+    # 아이콘 설정 (exe와 같은 폴더의 screendrawing.ico 사용)
+    icon_path = os.path.join(os.path.dirname(sys.executable if getattr(sys, 'frozen', False) else __file__), "screendrawing.ico")
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QtGui.QIcon(icon_path))
 
     window = ScreenDrawing()
     window.showFullScreen()
