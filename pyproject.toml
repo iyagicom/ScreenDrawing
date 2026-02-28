@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "screendrawing"
-version = "1.7.0"
+version = "1.7.3"
 description = "Lightweight screen drawing tool for Linux and Windows"
 readme = "README.md"
 authors = [{ name = "Jeong SeongYong", email = "iyagicom@gmail.com" }]
