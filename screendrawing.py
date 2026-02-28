@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ScreenDrawing
-Version: 1.7.1
+Version: 1.7.2
 Author: Jeong SeongYong
 Email: iyagicom@gmail.com
 Description: Lightweight screen drawing tool for Linux and Windows
@@ -1718,6 +1718,9 @@ class ScreenDrawing(QtWidgets.QWidget):
     def force_exit(self) -> None:
         """설정을 저장하고 프로그램을 종료한다."""
         self._save_settings()
+        if self._passthrough_overlay:
+            self._passthrough_overlay.close()
+            self._passthrough_overlay = None
         self.toolbar.close()
         QtWidgets.QApplication.quit()
 
